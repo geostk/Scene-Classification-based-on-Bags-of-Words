@@ -14,6 +14,17 @@ from scipy.spatial.distance import cdist
 import os
 import cPickle
 from scipy.cluster.vq import kmeans
+from multiprocessing import Pool
+def f(x):
+        
+        imPath,filter_Bank,alpha = x
+        print imPath
+        I = Image.open(imPath[0])
+        filterResponse = extractFilterResponses(I,filter_Bank)
+
+        random_pixels=random.sample(range(filterResponse.shape[0]),alpha)
+        return filterResponse[random_pixels,:]
+
 def extractFilterResponses(I,filterBank):
     """
     I is numpy.array
@@ -40,6 +51,8 @@ def getFilterBankAndDictionary(imPaths):
     K = 200;
     N= 3*len(filter_Bank)
     T = len(imPaths)
+    
+    '''
     filterResponses = np.zeros((alpha*T,N))
     for i,imPath in enumerate(imPaths):
         print 'i=',i,'imPath=',imPath[0]
@@ -49,7 +62,15 @@ def getFilterBankAndDictionary(imPaths):
 
         random_pixels=random.sample(range(filterResponse.shape[0]),alpha)
         filterResponses[i:i+alpha,:]=filterResponse[random_pixels,:]
-    dictionary = kmeans(filterResponses, K,iter=200)
+    '''
+##################################################
+    p = Pool(10)
+    x = [ (i,filter_Bank,alpha) for i in imPaths]
+    filterResponses = p.map(f, x)
+    filterResponses = np.array(filterResponses).reshape(T*alpha,-1)
+############################################################
+    #pdb.set_trace()
+    dictionary = kmeans(filterResponses, K)#iter=200
     return dictionary
 
 def computeDictionary(train_image_paths,images_dir):
@@ -81,7 +102,7 @@ if __name__== "__main__":
     computeDictionary(train_image_paths,images_dir)
     I= Image.open('sun_aaegrbxogokacwmz.jpg')
     getVisualWords(I, filterBank.filterbank().create_filterbanks(), cPickle.load(open('dictionary.pkl', 'rb')))
-    print "AAAAAAAA",
+
     '''
     f1=filterBank.Gaussian_filter(1)
     I1=f1.get_filter_response(im)
