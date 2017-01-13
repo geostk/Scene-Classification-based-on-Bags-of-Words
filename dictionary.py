@@ -1,7 +1,5 @@
 from PIL import Image
-import filterBank
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import numpy as np
 import scipy.ndimage
 import scipy
@@ -15,86 +13,134 @@ import os
 import cPickle
 from scipy.cluster.vq import kmeans
 from multiprocessing import Pool
+from filterbank import createFilterbanks
 
 def MPWorkerForGetFilterResponses(x):
-        
-        ImPath,FilterBank,alpha = x
-        print ImPath,
-        I = Image.open(ImPath)
-        FilterResponse = extractFilterResponses(I,FilterBank)
-        RandomPixelIndx=random.sample(range(FilterResponse.shape[0]),alpha)
-        return FilterResponse[RandomPixelIndx,:]
-
-def extractFilterResponses(I,FilterBank):
     """
-    I is numpy.array
-
-    return: filterResponses(N-by-3*M)
-            N is number of pixls, M is number of filters
+    Worker for multiprocess to extract filterResponses from an image
     """
-    #I.dtype = I.astype(float)
-    N = (I.size)[0] * (I.size)[1] # number of pixl
-    M = len(FilterBank)
+    ImPath,FilterBank,alpha = x
+    print "getting filter responses from ",ImPath
+    I = Image.open(ImPath)
+    FilterResponse = extractFilterResponses(I,FilterBank)
+    RandomPixelIndx=random.sample(range(FilterResponse.shape[0]),alpha)
+    return FilterResponse[RandomPixelIndx,:]
+
+def extractFilterResponses(Im,FilterBank):
+    """
+    input parameters:
+        Im : the input image (type:PIL.JpegImagePlugin.JpegImageFile),
+            opened by Image.open()
+        FilterBank : a list of filters
+
+    return: filterResponses:  A numpy.array(N-by-3*M).
+            N is number of pixls, M is number of filters, 3 channels.
+
+    """
+    
+    N = (Im.size)[0] * (Im.size)[1] # N is the number of pixels of the image I
+    M = len(FilterBank) #Number of filters
     FilterResponses = np.zeros((N,M*3))
-    (L,a,b) = rgb2Lab(I)
+    (L,a,b) = rgb2Lab(Im)
     for i, f in enumerate(FilterBank):
-        FilterResponses[:,3*i]=np.reshape((f.get_filter_response(L)),(N,))
-        FilterResponses[:,3*i+1]=np.reshape((f.get_filter_response(a)),(N,))
-        FilterResponses[:,3*i+2]=np.reshape((f.get_filter_response(b)),(N,))
+        FilterResponses[:,3*i]=np.reshape((f.getFilterResponse(L)),(N,))
+        FilterResponses[:,3*i+1]=np.reshape((f.getFilterResponse(a)),(N,))
+        FilterResponses[:,3*i+2]=np.reshape((f.getFilterResponse(b)),(N,))
     return FilterResponses
 
 
 def getFilterBankAndDictionary(imPaths):
+    """
+    Description:
+
+    Creates filterbanks, uses the filters to get filter responses from each 
+    given image then randomly choose some pixels from these image to compute
+    dictionary with Kmeans.
+    Use multiprocess to accelerate the process of extracting filter responses 
+
+    input parameters:
+        imPaths : A list of string represents the path of training images
+
+    return:
+        (FilterBank,Dictionary)
+        A tuple contains filterbank and dictionary 
+
+    """
     
-    filter_Bank = filterBank.filterbank().create_filterbanks();
-    alpha = 50;
-    K = 50;
-    N= 3*len(filter_Bank)
+    FilterBank = createFilterbanks()
+
+    alpha = 50# choose alpha pixels from an image to compute dictionary
+    K = 50 # K for Kmeans
     T = len(imPaths)
     
-    '''
+    ''' Sequence solution
+    N= 3*len(FilterBank)
+    
     filterResponses = np.zeros((alpha*T,N))
     for i,imPath in enumerate(imPaths):
         print 'i=',i,'imPath=',imPath[0]
         I = Image.open(imPath[0])
         
-        filterResponse = extractFilterResponses(I,filter_Bank)
+        filterResponse = extractFilterResponses(I,FilterBank)
 
         random_pixels=random.sample(range(filterResponse.shape[0]),alpha)
         filterResponses[i:i+alpha,:]=filterResponse[random_pixels,:]
     '''
 ##################################################
     p = Pool(None)
-    x = [ (i,filter_Bank,alpha) for i in imPaths]
-    filterResponses = p.map(MPWorkerForGetFilterResponses, x)
+    x = [ (i,FilterBank,alpha) for i in imPaths]
+    FilterResponses = p.map(MPWorkerForGetFilterResponses, x)
     p.close()
     p.join()
-    filterResponses = np.array(filterResponses).reshape(T*alpha,-1)
+    FilterResponses = np.array(FilterResponses).reshape(T*alpha,-1)
 ############################################################
-    #pdb.set_trace()
+    
     print 'Computing Kmeans\n'
-    dictionary = kmeans(filterResponses, K,iter =1)#iter=200
+    Dictionary = kmeans(FilterResponses, K,iter =1)#iter=200
     print 'Done\n'
-    return (filter_Bank,dictionary)
+    return (FilterBank,Dictionary)
 
-def computeDictionary(train_image_paths,images_dir):
-    T_paths=[]
-    for i, path in enumerate(train_image_paths):
-        
-        T_paths.append((os.path.join(images_dir,path[0][0])))
-        print i, train_image_paths[i]
-    (filter_Bank,dictionary) = getFilterBankAndDictionary(T_paths)
-    cPickle.dump(dictionary,open('dictionary.pkl', 'wb'))
-    cPickle.dump(filter_Bank,open('filterbank.pkl', 'wb'))
-    print dictionary,
-    return dictionary
+def computeDictionary(TrainImagePaths,ImagesDir):
+    """
+    Description:
 
-def getVisualWords(I, filter_bank, dictionary):
-    filterResponses = extractFilterResponses(I,filter_bank)
+    Construct the path for each training image, get filterbank and compute 
+    dictionary.
+    Save dictionary and filterbank for future use.
+
+    input parameters:
+        TrainImagePaths: all paths of training images
+        ImagesDir: path to the image directory
+
+    """
     #pdb.set_trace()
-    D = cdist(filterResponses,dictionary[0],'euclidean')
-    wordMat = (np.argmin(D,axis=1)).reshape((I.size[0],I.size[1]))
-    return wordMat
+    NewTrainImagePaths=[]
+    for i, path in enumerate(TrainImagePaths):        
+        NewTrainImagePaths.append((os.path.join(ImagesDir,path[0][0])))
+        print i, TrainImagePaths[i]
+
+    (FilterBank,Dictionary) = getFilterBankAndDictionary(NewTrainImagePaths)
+    cPickle.dump(Dictionary,open('dictionary.pkl', 'wb'))
+    cPickle.dump(FilterBank,open('filterbank.pkl', 'wb'))
+    print Dictionary,
+    return Dictionary
+
+def getVisualWords(I, FilterBank, dictionary):
+    '''
+    Descriptipon:
+    Map each pixel in the image to its closest word in the dictionary
+
+    '''
+
+    FilterResponses = extractFilterResponses(I,FilterBank)
+    """
+    Compute the distance between filterResponses and dictionary words
+    D(i,j) represent the distance between i th filterResponses and j th word 
+    in dictionary
+    """
+    D = cdist(FilterResponses,dictionary[0],'euclidean')
+    WordMap = (np.argmin(D,axis=1)).reshape((I.size[1],I.size[0]))
+    return WordMap
 
 
 
@@ -105,7 +151,8 @@ if __name__== "__main__":
     train_image_paths = train_test_mat_file['trainImagePaths']
     #computeDictionary(train_image_paths,images_dir)
     I= Image.open('sun_aaegrbxogokacwmz.jpg')
-    WordMap=getVisualWords(I, filterBank.filterbank().create_filterbanks(), cPickle.load(open('dictionary.pkl', 'rb')))
+    pdb.set_trace()
+    WordMap=getVisualWords(I,createFilterbanks(), cPickle.load(open('dictionary.pkl', 'rb')))
     plt.imshow(WordMap)
     plt.show()
     '''
