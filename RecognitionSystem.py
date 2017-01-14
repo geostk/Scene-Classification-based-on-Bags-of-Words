@@ -10,7 +10,7 @@ from dictionary import computeDictionary,getVisualWords
 import os
 from multiprocessing import Pool
 from scipy import stats
-
+from config import cfg
 def getImageFeatures(WordMap,DictionarySize):
     """
     Descriptions:
@@ -80,10 +80,11 @@ def getImageFeaturesSPM(LayerNum, WordMap, DictionarySize):
                 NewHist[(i-1)*(2**l)+j-1,:] = \
                     SavedHist[0+(i-1)*(2**(l+2))+(j-1)*2,:]+ \
                     SavedHist[1+(i-1)*(2**(l+2))+(j-1)*2,:]+ \
-                    SavedHist[0+(i-1)*(2**(l+2))+(j-1)*2+2^(l+1),:]+ \
-                    SavedHist[1+(i-1)*(2**(l+2))+(j-1)*2+2^(l+1),:]
+                    SavedHist[0+(i-1)*(2**(l+2))+(j-1)*2+2**(l+1),:]+ \
+                    SavedHist[1+(i-1)*(2**(l+2))+(j-1)*2+2**(l+1),:]
                 
-                LayerHist[i*(2**L)+j*DictionarySize:i*(2**L)+j*DictionarySize+DictionarySize]= NewHist[(i-1)*(2**l)+j-1,:]/4
+                LayerHist[i*(2**L)+j*DictionarySize:i*(2**L)+\
+                j*DictionarySize+DictionarySize]= NewHist[(i-1)*(2**l)+j-1,:]/4
             
        
         SavedHist=NewHist/4;
@@ -119,9 +120,9 @@ def distanceToSet(WordHist, Histograms):
 
 def trainSystem():
     TrainTestMatFile = sio.loadmat('traintest.mat')
-    ImageDir = 'images'
-    TargetDir = './wordmap'
-    TrainImagePaths = TrainTestMatFile['smallTrainImagePaths']
+    ImageDir = cfg.IMAGES_PATH
+    TargetDir = cfg.WORDMAP_DIR
+    TrainImagePaths = TrainTestMatFile[cfg.TRAIN_IMAGE_PATHS]
     Classnames = TrainTestMatFile['classnames']
     #pdb.set_trace()
     print "Computing dictionary ... ",
@@ -131,7 +132,7 @@ def trainSystem():
     FilterBank = cPickle.load(open('filterbank.pkl', 'rb'))
     print 'Computing visual words ... ',
     batchToVisualWords(TrainImagePaths,Classnames,FilterBank,Dictionary,ImageDir,
-        TargetDir,10)
+        TargetDir)
     print 'Done',
     TrainHistograms=createHistograms(len(Dictionary[0]),TrainImagePaths,TargetDir)
     cPickle.dump(TrainHistograms,open('TrainHistograms.pkl', 'wb'))
@@ -155,7 +156,7 @@ def MPWorkerToGetVisualWords(x):
     cPickle.dump(WordRepresentation,open(OutPutPath, 'wb'))
 
 def batchToVisualWords(TrainImagePaths,Classnames,FilterBank,Dictionary,ImageDir,
-    TargetDir,NumOfCores):
+    TargetDir):
     """
     Get the visual words from all training image and save them
 
@@ -168,7 +169,7 @@ def batchToVisualWords(TrainImagePaths,Classnames,FilterBank,Dictionary,ImageDir
             os.mkdir(os.path.join(TargetDir,Classnames[c,0][0]))
 
     x = [(a,FilterBank,Dictionary,ImageDir,TargetDir) for a in TrainImagePaths]
-    pdb.set_trace()
+    #pdb.set_trace()
     p = Pool(None)
     p.map(MPWorkerToGetVisualWords, x)
     p.close()
@@ -179,7 +180,7 @@ def createHistograms(DictionarySize,TrainImagePaths,TargetDir):
     concatenate all the histograms from each training image into a single matrix
     """
     LayerNum=3
-    ImageDir='./images'
+    ImageDir=cfg.IMAGES_PATH
     OutPutHistograms = np.zeros((DictionarySize*(48),len(TrainImagePaths)))
     for i in xrange(len(TrainImagePaths)):
         print 'createHistograms',i
@@ -190,11 +191,11 @@ def createHistograms(DictionarySize,TrainImagePaths,TargetDir):
 
 
 def evaluateRecognitionSystem():
-    ImageDir='./images'
+    ImageDir=cfg.IMAGES_PATH
     TrainTestMatFile = sio.loadmat('traintest.mat')
-    TestImagePaths = TrainTestMatFile['smallTestImagePaths']
-    TrainImageLabels = TrainTestMatFile['smallTrainImageLabels']
-    TestImageLabels  = TrainTestMatFile['smallTestImageLabels']
+    TestImagePaths = TrainTestMatFile[cfg.TRAIN_IMAGE_PATHS]
+    TrainImageLabels = TrainTestMatFile[cfg.TRAIN_IMAGE_LABELS]
+    TestImageLabels  = TrainTestMatFile[cfg.TEST_IMAGE_LABELS]
     Dictionary = cPickle.load(open('dictionary.pkl', 'rb'))
     FilterBank = cPickle.load(open('filterbank.pkl', 'rb'))
     TrainHistograms = cPickle.load(open('TrainHistograms.pkl', 'rb'))
@@ -221,50 +222,68 @@ def knnClassify(WordHist,TrainHistograms,TrainImageLabels,k):
     return PredictedLabel[0][0][0]
 
 def visualizeWords():
-    ImageDir='./images'
-    TargetDir = './wordmap'
+    ImageDir=cfg.IMAGES_PATH
+    TargetDir = cfg.WORDMAP_DIR
     Dictionary = cPickle.load(open('dictionary.pkl', 'rb'))
     TrainTestMatFile = sio.loadmat('traintest.mat')
-    TrainImageLabels = TrainTestMatFile['smallTrainImageLabels']
-    TrainImagePaths = TrainTestMatFile['smallTrainImagePaths']
-
+    TrainImageLabels = TrainTestMatFile[cfg.TRAIN_IMAGE_LABELS]
+    TrainImagePaths = TrainTestMatFile[cfg.TRAIN_IMAGE_PATHS]
     NumOfWords = len(Dictionary[0])
-    PatchSize=9;
-    HalfOfPatchSize=4;
-    AverPatchOfWords= []
-    
-    for i in xrange(NumOfWords):
-        AverPatchOfWords.append(np.zeros((PatchSize,PatchSize,3)))
-
-    CountOfWords = np.zeros((NumOfWords,))
-    for t in TrainImagePaths:
-        I = Image.open(os.path.join(ImageDir,t[0][0]))
-        #cPickle.dump(WordRepresentation,open(OutPutPath, 'wb'))
-        WordMap =  cPickle.load(open(os.path.join(TargetDir,t[0][0]+'.pkl'), 'rb'))
+    RecomputePatch = True
+    if RecomputePatch:
         
-        W,H = I.size
-        I = np.array(I)
-        print I.shape,'\n'
-        if (H<PatchSize or W <PatchSize):
-            continue
-        for j in xrange(H):
-            for k in xrange(W):
-                if (j<HalfOfPatchSize or k< HalfOfPatchSize or j>(H-HalfOfPatchSize-1) or k>(W-HalfOfPatchSize-1)):
-                    continue
-                CountOfWords[WordMap[j,k]]+=1
-                print I.shape,t[0][0],'\n'
-                if AverPatchOfWords[WordMap[j,k]].shape!= I [k-HalfOfPatchSize:k+HalfOfPatchSize+1,j-HalfOfPatchSize:j+HalfOfPatchSize+1,:].shape:
-                        pdb.set_trace()
-                print j,k,H,W,AverPatchOfWords[WordMap[j,k]].shape, I [j-HalfOfPatchSize:j+HalfOfPatchSize+1,j-HalfOfPatchSize:j+HalfOfPatchSize+1,:].shape,WordMap.shape
-                AverPatchOfWords[WordMap[j,k]] = AverPatchOfWords[WordMap[j,k]] + I [j-HalfOfPatchSize:k+HalfOfPatchSize+1,j-HalfOfPatchSize:j+HalfOfPatchSize+1,:]
-    
+        PatchSize=9;
+        HalfOfPatchSize=4;
+        AverPatchOfWords= []
+        
+        for i in xrange(NumOfWords):
+            AverPatchOfWords.append(np.zeros((PatchSize,PatchSize,3)))
+
+        CountOfWords = np.zeros((NumOfWords,))
+        for t in TrainImagePaths:
+            I = Image.open(os.path.join(ImageDir,t[0][0]))
+            WordMap =  cPickle.load(open(os.path.join(TargetDir,t[0][0]+'.pkl'), 'rb'))
+            #WordMap =  cPickle.load(open(os.path.join(TargetDir,'bamboo_forest/sun_abqaamobpeckykne.jpg'+'.pkl'), 'rb'))
+            W,H = I.size
+            I = np.array(I)
+            #print I.shape,'\n'
+            if (H<PatchSize or W <PatchSize):
+                continue
+            for j in xrange(H):
+                for k in xrange(W):
+                    if (j<HalfOfPatchSize or k< HalfOfPatchSize or j>(H-HalfOfPatchSize-1) or k>(W-HalfOfPatchSize-1)):
+                        continue
+                    CountOfWords[WordMap[j,k]]+=1
+                    AverPatchOfWords[WordMap[j,k]] = AverPatchOfWords[WordMap[j,k]] + I [j-HalfOfPatchSize:j+HalfOfPatchSize+1,k-HalfOfPatchSize:k+HalfOfPatchSize+1,:]
+         
+        for i in xrange(NumOfWords):
+            if (CountOfWords[i]>0):
+                AverPatchOfWords[i] = np.rint(AverPatchOfWords[i]/CountOfWords[i])
+        cPickle.dump(AverPatchOfWords,open('AverPatchOfWords.pkl', 'wb'))
+    #pdb.set_trace()
+    AverPatchOfWords = cPickle.load(open('AverPatchOfWords.pkl', 'rb'))
+    NumOfColumTodisplay = 20
+    k =int(np.ceil(NumOfWords/float(NumOfColumTodisplay))) # number of words in each row to display
+    f, axarr=plt.subplots(k,NumOfColumTodisplay)
+
     for i in xrange(NumOfWords):
-        if (CountOfWords[i]>0):
-            AverPatchOfWords[i] = int(AverPatchOfWords[i]/CountOfWords[i])
-    pdb.set_trace()    
+        # draw the words
+        a = axarr[int(i/NumOfColumTodisplay),int(i%NumOfColumTodisplay)]
+        a.imshow(AverPatchOfWords[i])
+        a.set_xticks([])
+        a.set_yticks([])
+   
+    for i in xrange(NumOfWords,k*NumOfColumTodisplay):
+        # fill the empyt sub figure
+        a = axarr[int(i/NumOfColumTodisplay),int(i%NumOfColumTodisplay)]
+        a.imshow(np.zeros(AverPatchOfWords[0].shape))
+        a.set_xticks([])
+        a.set_yticks([])
+    f.subplots_adjust(hspace=0,wspace=0)  
+    plt.show()    
 
 if __name__ == '__main__':
-    #trainSystem()
-    #evaluateRecognitionSystem()
+    trainSystem()
+    evaluateRecognitionSystem()
 
     visualizeWords()

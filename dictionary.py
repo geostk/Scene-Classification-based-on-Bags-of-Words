@@ -14,6 +14,7 @@ import cPickle
 from scipy.cluster.vq import kmeans
 from multiprocessing import Pool
 from filterbank import createFilterbanks
+from config import cfg
 
 def MPWorkerForGetFilterResponses(x):
     """
@@ -69,11 +70,11 @@ def getFilterBankAndDictionary(imPaths):
     
     FilterBank = createFilterbanks()
 
-    alpha = 50# choose alpha pixels from an image to compute dictionary
-    K = 50 # K for Kmeans
+    alpha = cfg.ALPHA# choose alpha pixels from an image to compute dictionary
+    K = cfg.K_FOR_KMEANS # K for Kmeans
     T = len(imPaths)
     
-    ''' Sequence solution
+    ''' ############Sequence solution########################
     N= 3*len(FilterBank)
     
     filterResponses = np.zeros((alpha*T,N))
@@ -86,7 +87,7 @@ def getFilterBankAndDictionary(imPaths):
         random_pixels=random.sample(range(filterResponse.shape[0]),alpha)
         filterResponses[i:i+alpha,:]=filterResponse[random_pixels,:]
     '''
-##################################################
+        ##################################################
     p = Pool(None)
     x = [ (i,FilterBank,alpha) for i in imPaths]
     FilterResponses = p.map(MPWorkerForGetFilterResponses, x)
@@ -96,7 +97,7 @@ def getFilterBankAndDictionary(imPaths):
 ############################################################
     
     print 'Computing Kmeans\n'
-    Dictionary = kmeans(FilterResponses, K,iter =1)#iter=200
+    Dictionary = kmeans(FilterResponses, K,iter =cfg.K_FOR_KMEANS)#iter=200
     print 'Done\n'
     return (FilterBank,Dictionary)
 
