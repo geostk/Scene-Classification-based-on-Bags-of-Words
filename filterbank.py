@@ -39,7 +39,7 @@ class Derivative_filterX(filter):
         filter.__init__(self)
         self.Sigma = Sigma
     def getFilterResponse(self,I):
-        return correlate1d(I,[-1,0,1],axis=0)
+        return correlate1d(gaussian_filter(I,self.Sigma),[-1,0,1],axis=0)
 class Derivative_filterY(filter):
     """
     d/dy gaussians
@@ -48,7 +48,7 @@ class Derivative_filterY(filter):
         filter.__init__(self)
         self.Sigma = Sigma
     def getFilterResponse(self,I):
-        return correlate1d(I,[-1,0,1],axis=1)
+        return correlate1d(gaussian_filter(I,self.Sigma),[-1,0,1],axis=1)
 
     
 def createFilterbanks():
