@@ -1,13 +1,11 @@
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.ndimage
 import scipy
 import scipy.io as sio
 import pdb
 from RGB2Lab import rgb2Lab
 import random
-from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
 import os
 import cPickle
@@ -39,7 +37,7 @@ def extractFilterResponses(Im,FilterBank):
 
     """
     
-    N = (Im.size)[0] * (Im.size)[1] # N is the number of pixels of the image I
+    N = (Im.size)[0] * (Im.size)[1] # N is the number of pixels of the image
     M = len(FilterBank) #Number of filters
     FilterResponses = np.zeros((N,M*3))
     (L,a,b) = rgb2Lab(Im)
@@ -57,6 +55,7 @@ def getFilterBankAndDictionary(imPaths):
     Creates filterbanks, uses the filters to get filter responses from each 
     given image then randomly choose some pixels from these image to compute
     dictionary with Kmeans.
+    
     Use multiprocess to accelerate the process of extracting filter responses 
 
     input parameters:
@@ -72,7 +71,7 @@ def getFilterBankAndDictionary(imPaths):
 
     alpha = cfg.ALPHA# choose alpha pixels from an image to compute dictionary
     K = cfg.K_FOR_KMEANS # K for Kmeans
-    T = len(imPaths)
+    T = len(imPaths) # Number of input images
     
     ''' ############Sequence solution########################
     N= 3*len(FilterBank)
@@ -97,7 +96,7 @@ def getFilterBankAndDictionary(imPaths):
 ############################################################
     
     print 'Computing Kmeans\n'
-    Dictionary = kmeans(FilterResponses, K,iter =cfg.K_FOR_KMEANS)#iter=200
+    Dictionary = kmeans(FilterResponses, K,iter = cfg.NUM_ITER_FOR_KMEANS)#iter=200
     print 'Done\n'
     return (FilterBank,Dictionary)
 
@@ -146,27 +145,9 @@ def getVisualWords(I, FilterBank, dictionary):
 
 
 if __name__== "__main__":
-    images_dir = os.path.join('images')
-    assert os.path.exists(images_dir), "Paht{} not exists".format(images_dir)
-    train_test_mat_file = sio.loadmat('traintest.mat')
-    train_image_paths = train_test_mat_file['trainImagePaths']
-    #computeDictionary(train_image_paths,images_dir)
     I= Image.open('sun_aaegrbxogokacwmz.jpg')
     pdb.set_trace()
     WordMap=getVisualWords(I,createFilterbanks(), cPickle.load(open('dictionary.pkl', 'rb')))
     plt.imshow(WordMap)
     plt.show()
-    '''
-    f1=filterBank.Gaussian_filter(1)
-    I1=f1.get_filter_response(im)
 
-    f2=filterBank.LOG_filter(1)
-    I2=f2.get_filter_response(im)
-    plt.figure(1)
-    plt.imshow(im,cmap ='gray')
-    plt.figure(2)
-    plt.imshow(im,cmap =  plt.cm.gray)
-    plt.figure(3)
-    plt.imshow(im,cmap = plt.cm.gray_r)
-    plt.show() 
-    '''

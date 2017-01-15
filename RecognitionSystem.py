@@ -175,7 +175,7 @@ def batchToVisualWords(TrainImagePaths,Classnames,FilterBank,Dictionary,ImageDir
 
     x = [(a,FilterBank,Dictionary,ImageDir,TargetDir) for a in TrainImagePaths]
     #pdb.set_trace()
-    p = Pool(1)
+    p = Pool(None)
     p.map(MPWorkerToGetVisualWords, x)
     p.close()
     p.join()

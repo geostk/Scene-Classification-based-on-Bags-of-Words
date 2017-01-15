@@ -8,17 +8,17 @@ from easydict import EasyDict as edict
 #   from config import cfg
 cfg = edict()
 
-cfg.K_FOR_KMEANS = 100
+cfg.K_FOR_KMEANS = 200
 
 cfg.IMAGES_PATH = './images'
 
 cfg.WORDMAP_DIR = './wordmap'
-cfg.NUM_ITER_FOR_KMEANS = 20
+cfg.NUM_ITER_FOR_KMEANS = 10
 
 # cfg.ALPHA :The number of pixels choosen from an image to compute the dictionary
 cfg.ALPHA = 200 
 
-cfg.K_FOR_KNN = 2
+cfg.K_FOR_KNN = 10
 
 cfg.SCALES_FOR_CREATINMG_FILTERBANK = range(1,4)
 
@@ -26,7 +26,8 @@ cfg.GAUSSIAN_SIGMAS = np.array([1, 2, 4])
 cfg.LOG_SIGMAS = np.array([1, 2, 4, 8])
 cfg.D_GAUSSIAN_SIGMAS = np.array([2, 4])
 
-USE_SMALL_DATA_SET = True
+cfg.NUMBER_OF_LAYER_FOR_SPM = 4
+USE_SMALL_DATA_SET = False
 if USE_SMALL_DATA_SET:
     cfg.TRAIN_IMAGE_PATHS = 'smallTrainImagePaths'
     cfg.TEST_IMAGE_PATHS = 'smallTestImagePaths'   
