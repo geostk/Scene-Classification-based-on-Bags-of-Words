@@ -18,7 +18,7 @@ RecognitionSystem.py: Contains the function for training and evaluating the syst
 and function for visualizing the words in dictionary
 
 Some results:
-When set the 
+When set the
 cfg.K_FOR_KMEANS = 200
 cfg.NUM_ITER_FOR_KMEANS = 10
 cfg.ALPHA = 500 
@@ -47,6 +47,7 @@ ConfusionMatrix=
  [  1.   3.   1.   0.   2.   0.   0.   0.  44.]
 
  Accuracy= 0.626168224299
+ 
 |#|image| word map|
 |1|<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image1.jpg"  width="400" height = "400"/>|
 <img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_1.png"  width="400" height = "400" />|
