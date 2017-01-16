@@ -1,15 +1,12 @@
 # Bag-of-Words-for-Scene-Classification
 
-Scene classification based on Bag-of-Words and Spatial Pyramid Matching. 
-Multiprocess is used to accelerate extracting features from images and Mapping
-images to their visual words representation. There are 9 kinds of scene in our 
-data.
+Scene classification based on Bag-of-Words and Spatial Pyramid Matching. Multiprocessing is used to accelerate extracting features from images and Mapping images to their visual words representations. There are 9 kinds of scene in our data.
 
-config.py: Contains the configuration of some of the parameters used in this 
+config.py: Contains the configuration of some of the parameters used in this
 project.
 
 dictionary.py: Contains functions related to creating filterbank, computing
-dictionary and get the visual word map of an image.
+dictionary and getting the visual word map of an image.
 
 filterbank.py: Contains the definition of some filters and the corresponding 
 function to get filter responses from a given image.
