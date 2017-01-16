@@ -28,36 +28,25 @@ cfg.NUMBER_OF_LAYER_FOR_SPM = 4
 Can get a result like:   
 ConfusionMatrix =
 
- [ 29.   0.   0.   0.   0.   0.   0.   0.   0.]
-
- [  0.  26.   3.   1.   4.   0.   0.   0.   1.]
-
- [  4.   7.   9.   3.   2.   2.   1.   1.   2.]
-
- [  4.   1.   0.  23.   2.   0.  10.   0.   0.]
-
- [  2.   0.   0.   2.  36.   0.   4.   0.   0.]
-
- [  2.   8.   7.   2.   2.   2.   1.   0.   2.]
-
- [  1.   0.   1.   2.  13.   0.  17.   0.   0.]
-
- [  5.   4.   1.   2.   3.   0.   1.  15.   0.]
-
- [  1.   3.   1.   0.   2.   0.   0.   0.  44.]
+ [ 29.   0.   0.   0.   0.   0.   0.   0.   0.]   
+ [  0.  26.   3.   1.   4.   0.   0.   0.   1.]   
+ [  4.   7.   9.   3.   2.   2.   1.   1.   2.]   
+ [  4.   1.   0.  23.   2.   0.  10.   0.   0.]   
+ [  2.   0.   0.   2.  36.   0.   4.   0.   0.]   
+ [  2.   8.   7.   2.   2.   2.   1.   0.   2.]   
+ [  1.   0.   1.   2.  13.   0.  17.   0.   0.]   
+ [  5.   4.   1.   2.   3.   0.   1.  15.   0.]   
+ [  1.   3.   1.   0.   2.   0.   0.   0.  44.]   
 
  Accuracy= 0.626168224299
 
-|#|image| word map|
-
-|1|<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image1.jpg"  width="400" height = "400"/>|
-<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_1.png"  width="400" height = "400" />|
-|2|
-<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image2.jpg"  width="400" height = "400" />|
+Some images and their corresponding wordMaps:   
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image1.jpg"  width="400" height = "400"/>
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_1.png"  width="400" height = "400" />
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image2.jpg"  width="400" height = "400" />
 <img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_2.png"  width="400" height = "400" />
-|3|
-<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image3.jpg"  width="400" height = "400" />|
-<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_3.png"  width="400" height = "400" />|
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image3.jpg"  width="400" height = "400" />
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_3.png"  width="400" height = "400" />
 
 Visualization of the words in dictionary:
 <img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/words.png"  />
