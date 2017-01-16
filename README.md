@@ -18,9 +18,6 @@ and function for visualizing the words in dictionary
 
 Some results:
 
-
-<table><tr>
-<td><img src="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image1.jpg/" border=0></td>
-<td><img src="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_1.png" border=0></td>
-</tr></table>
+![](https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image1.jpg)
+![](https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_1.png)
 
