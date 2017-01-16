@@ -17,16 +17,16 @@ function to get filter responses from a given image.
 RecognitionSystem.py: Contains the function for training and evaluating the system
 and function for visualizing the words in dictionary
 
-Some results:
-When set the
-cfg.K_FOR_KMEANS = 200
-cfg.NUM_ITER_FOR_KMEANS = 10
-cfg.ALPHA = 500 
-cfg.K_FOR_KNN = 10
-cfg.NUMBER_OF_LAYER_FOR_SPM = 4
+Some results:   
+When set the   
+cfg.K_FOR_KMEANS = 200   
+cfg.NUM_ITER_FOR_KMEANS = 10   
+cfg.ALPHA = 500    
+cfg.K_FOR_KNN = 10   
+cfg.NUMBER_OF_LAYER_FOR_SPM = 4   
 
-Can get a result like:
-ConfusionMatrix=
+Can get a result like:   
+ConfusionMatrix =
 
  [ 29.   0.   0.   0.   0.   0.   0.   0.   0.]
 
