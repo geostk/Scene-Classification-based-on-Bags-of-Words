@@ -20,5 +20,9 @@ Some results:
 
 <img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image1.jpg"  width="400" height = "400" />
 <img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_1.png"  width="400" height = "400" />
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image2.jpg"  width="400" height = "400" />
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_2.png"  width="400" height = "400" />
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/image3.jpg"  width="400" height = "400" />
+<img src ="https://github.com/skfory/Bag-of-Words-for-Scene-Classification/blob/master/result_image/WordMap_3.png"  width="400" height = "400" />
 
 
